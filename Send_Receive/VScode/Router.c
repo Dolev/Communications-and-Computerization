@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 	        else          //dont send..
           {   sendto(socket_fd, "Don't_Write", strlen("Don't_Write") , 0, (struct sockaddr *)&Server,sizeof(Server)); }
     }
-    else{   //Always sending
+    else{   //server sending - Always sending
 	        sendto(socket_fd, msg_get , strlen(msg_get) , 0, (struct sockaddr *)&Client,sizeof(Client));       
      }
 
