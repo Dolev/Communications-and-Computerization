@@ -5,35 +5,58 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <strings.h>
+#include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include <stdio.h>
+#include <stdbool.h>
 
 int main(int argc, char *argv[])
 {
-  int socket_client; // define a socket 
-  struct sockaddr_in  dest;// build a struct that contains communication protocol,IP address,Port,data to send.
-  struct hostent *hostptr; //defines a pointer to the struct 
-  struct { char head; char body[100]; char* X; char tail; } msgbuf; //defines a struct that contains a head char ,u_long body,char tail.
-
-  socket_client = socket (AF_INET, SOCK_DGRAM, 0); // Initializ the socket with the IP protocol,data transfe protocol.
-  memset((char *) &dest,0, sizeof(dest)); /* They say you must do this */ // Initializa block of memory with a given value.
-  hostptr = gethostbyname(argv[1]);  //points on the destinaion IP.
-  dest.sin_family = (short) AF_INET; // puts the IP protocol in the destinaion IP protocol.
-  memcpy(hostptr->h_addr, (char *)&dest.sin_addr,hostptr->h_length); //copies the host IP address.
-  dest.sin_port = htons((u_short)0x3333); //sets the destination port.
-
+  int socket_fd,cc;
+  bool check= true;
+  char msg_get[500];
+  char msg_snd[500];
   
-  msgbuf.head = '<';
- memcpy(msgbuf.body,argv[2],sizeof(argv[2])); 
- memcpy (msgbuf.X,argv[3],sizeof(argv[3]));
- // msgbuf.body = htonl(getpid()); /* IMPORTANT! */ 
-  msgbuf.tail = '>';
-  int from=sizeof(dest);
-  sendto(socket_fd,&msgbuf,sizeof(msgbuf),0,(struct sockaddr *)&dest,sizeof(dest)); // sends the messege to the destination.
-  recvfrom(socket_fd,&msgbuf,sizeof(msgbuf),0,(struct sockaddr *)&dest,&from);
-  printf("got data:%c%s%c\n",msgbuf.head,msgbuf.body,msgbuf.tail);
+  struct sockaddr_in  dest,s_in,from;
+  struct hostent *hostptr;
+  
+  memset(&msg_get,0,sizeof(msg_get));
+  socket_fd = socket (AF_INET, SOCK_DGRAM, 0);
+
+  memset((char *) &dest,0, sizeof(dest)); 
+  hostptr = gethostbyname(argv[1]);
+  dest.sin_family = (short) AF_INET;
+  memcpy(hostptr->h_addr, (char *)&dest.sin_addr,hostptr->h_length);
+  dest.sin_port = htons((u_short)0x3333);
 
 
+  s_in.sin_family = (short)AF_INET;
+  s_in.sin_addr.s_addr = htonl(INADDR_ANY);   
+  s_in.sin_port = htons((u_short)0x3322);
+  bind(socket_fd, (struct sockaddr *)&s_in, sizeof(s_in));
+  
+if(!check){
+  printf("\nPlease write a messege: ");
+  scanf("%s",msg_snd);
+  }
+
+while(strcmp(msg_snd,"exit")!=0){
+  if(!check) 
+  {
+    sendto(socket_fd,msg_snd,sizeof(msg_snd),0,(struct sockaddr *)&dest,sizeof(dest));
+    check= true;
+  }
+  if(check){
+  socklen_t size = sizeof(from);
+  cc = recvfrom(socket_fd,&msg_get,sizeof(msg_get),0,(struct sockaddr *)&from,&size);
+  msg_get[cc] = '\0';
+  printf("\nThe messege you got is: %s ",msg_get);
+  check=false;
+  }
+  if(!check){
+  printf("\nPlease write a messege: ");
+  scanf("%s",msg_snd);
+  }
+}
   return 0;
 }
