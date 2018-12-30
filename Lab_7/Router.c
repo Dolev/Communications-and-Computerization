@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
     cc = recvfrom(socket_fd,&msg_get,sizeof(msg_get),0,(struct sockaddr *)&From,&fsize);  //
     msg_get[cc] = '\0';
 
-    if(From.sin_port==Client.sin_port){  // if client send to router by port
+    if(From.sin_port==Client.sin_port){   // if client send to router by port
 		     
 	  double rnd = rand() % 2;
     double x = atof(argv[1]);
@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 	        else          //dont send..
           {   sendto(socket_fd, "Don't_Write", strlen("Don't_Write") , 0, (struct sockaddr *)&Server,sizeof(Server)); }
     }
-    else{   //server sending - Always sending
+    else{   //Always sending
 	        sendto(socket_fd, msg_get , strlen(msg_get) , 0, (struct sockaddr *)&Client,sizeof(Client));       
      }
 
